@@ -2,16 +2,21 @@
 
 // src/cli/index.ts
 import { Command } from "commander";
-import chalk2 from "chalk";
+import chalk3 from "chalk";
 
 // src/services/request-service.ts
 var makeRequest = async (method, url) => {
   const start = Date.now();
   const response = await fetch(url, { method: method.toUpperCase() });
+  const headers = {};
+  response.headers.forEach((value, key) => {
+    headers[key] = value;
+  });
   const end = Date.now();
   const data = await response.json();
   return {
     data,
+    headers,
     metadata: {
       status: response.status,
       statusText: response.statusText,
@@ -45,21 +50,32 @@ var printMetadata = (metadata) => {
   const { status, statusText, duration, size } = metadata;
   const statusColor = status >= 200 && status < 300 ? chalk.green : chalk.red;
   console.log();
-  console.log(
-    chalk.bold("Status:"),
-    statusColor(`${metadata.status} ${metadata.statusText}`)
-  );
-  console.log(chalk.bold("Time:"), chalk.blue(`${metadata.duration} ms`));
-  console.log(chalk.bold("Size:"), chalk.blue(formatBytes(metadata.size)));
+  console.log(chalk.bold("Status:"), statusColor(`${status} ${statusText}`));
+  console.log(chalk.bold("Time:"), chalk.blue(`${duration} ms`));
+  console.log(chalk.bold("Size:"), chalk.blue(formatBytes(size)));
   console.log(chalk.blue("----------------------------------------"));
+};
+
+// src/services/headers-formatter.ts
+import chalk2 from "chalk";
+var printHeaders = (headers) => {
+  console.log(chalk2.blue("Response Headers:"));
+  console.log();
+  Object.entries(headers).forEach(([key, value]) => {
+    console.log(`${chalk2.yellow(key)} : ${chalk2.white(value)}`);
+  });
+  console.log();
 };
 
 // src/cli/commands/request.ts
 var setupRequestCommand = (program2) => {
-  program2.argument("<method>", "HTTP Method").argument("<url>", "API Endpoint URL").action(async (method, url) => {
+  program2.argument("<method>", "HTTP Method").argument("<url>", "API Endpoint URL").option("--show-headers", "Display response headers").action(async (method, url, options) => {
     try {
       const response = await makeRequest(method, url);
       printMetadata(response.metadata);
+      if (options.showHeaders) {
+        printHeaders(response.headers);
+      }
       printJSON(response.data);
     } catch (error) {
       console.error("Request failed");
@@ -72,7 +88,7 @@ var setupRequestCommand = (program2) => {
 var program = new Command();
 program.name("NetShift").description("NetShift - terminal-first API workflow tool").version("0.1.0");
 program.command("ping").description("Checks if NetShift is alive \u2705").action(() => {
-  console.log(chalk2.green("NetShift is alive and ready to serve! \u{1F680}"));
+  console.log(chalk3.green("NetShift is alive and ready to serve! \u{1F680}"));
 });
 setupRequestCommand(program);
 program.parse();
