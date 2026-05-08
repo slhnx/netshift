@@ -2,6 +2,7 @@
 
 import { Command } from "commander";
 import chalk from "chalk";
+import { setupRequestCommand } from "./commands/request";
 
 const program = new Command();
 
@@ -17,5 +18,6 @@ program
     console.log(chalk.green("NetShift is alive and ready to serve! 🚀"));
   });
 
+setupRequestCommand(program);
 
 program.parse();
