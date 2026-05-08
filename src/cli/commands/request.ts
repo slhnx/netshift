@@ -3,6 +3,9 @@ import { makeRequest } from "@/services/request-service";
 import { printJSON } from "@/services/response-formatter";
 import { printMetadata } from "@/services/metadata-formatter";
 import { printHeaders } from "@/services/headers-formatter";
+import { parseURL } from "@/utils/parse-url";
+import { printError } from "@/services/error-formatter";
+import { normalizeUrl } from "@/utils/normalize-url";
 
 export const setupRequestCommand = (program: Command) => {
   program
@@ -11,7 +14,14 @@ export const setupRequestCommand = (program: Command) => {
     .option("--show-headers", "Display response headers")
     .action(async (method, url, options) => {
       try {
-        const response = await makeRequest(method, url);
+        const normalizedUrl = normalizeUrl(url.trim());
+
+        if (!parseURL(normalizedUrl)) {
+          printError("❌ Invalid URL provided. Please provide a valid URL.");
+          return;
+        }
+
+        const response = await makeRequest(method, normalizedUrl);
 
         printMetadata(response.metadata);
 
@@ -21,9 +31,9 @@ export const setupRequestCommand = (program: Command) => {
 
         printJSON(response.data);
       } catch (error) {
-        console.error("Request failed");
-
-        console.error(error);
+        if (error instanceof Error) {
+          printError(error.message);
+        }
       }
     });
 };

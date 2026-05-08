@@ -2,7 +2,7 @@
 
 // src/cli/index.ts
 import { Command } from "commander";
-import chalk3 from "chalk";
+import chalk4 from "chalk";
 
 // src/services/request-service.ts
 var makeRequest = async (method, url) => {
@@ -67,19 +67,51 @@ var printHeaders = (headers) => {
   console.log();
 };
 
+// src/utils/parse-url.ts
+var parseURL = (input) => {
+  try {
+    return new URL(input);
+  } catch (err) {
+    return null;
+  }
+};
+
+// src/services/error-formatter.ts
+import chalk3 from "chalk";
+var printError = (message) => {
+  console.log();
+  console.log(chalk3.red.bold("Error:"));
+  console.log(chalk3.red(message));
+  console.log();
+};
+
+// src/utils/normalize-url.ts
+var normalizeUrl = (value) => {
+  if (value.startsWith("http://") || value.startsWith("https://")) {
+    return value;
+  }
+  return `https://${value}`;
+};
+
 // src/cli/commands/request.ts
 var setupRequestCommand = (program2) => {
   program2.argument("<method>", "HTTP Method").argument("<url>", "API Endpoint URL").option("--show-headers", "Display response headers").action(async (method, url, options) => {
     try {
-      const response = await makeRequest(method, url);
+      const normalizedUrl = normalizeUrl(url.trim());
+      if (!parseURL(normalizedUrl)) {
+        printError("\u274C Invalid URL provided. Please provide a valid URL.");
+        return;
+      }
+      const response = await makeRequest(method, normalizedUrl);
       printMetadata(response.metadata);
       if (options.showHeaders) {
         printHeaders(response.headers);
       }
       printJSON(response.data);
     } catch (error) {
-      console.error("Request failed");
-      console.error(error);
+      if (error instanceof Error) {
+        printError(error.message);
+      }
     }
   });
 };
@@ -88,7 +120,7 @@ var setupRequestCommand = (program2) => {
 var program = new Command();
 program.name("NetShift").description("NetShift - terminal-first API workflow tool").version("0.1.0");
 program.command("ping").description("Checks if NetShift is alive \u2705").action(() => {
-  console.log(chalk3.green("NetShift is alive and ready to serve! \u{1F680}"));
+  console.log(chalk4.green("NetShift is alive and ready to serve! \u{1F680}"));
 });
 setupRequestCommand(program);
 program.parse();
