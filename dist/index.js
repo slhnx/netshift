@@ -7,10 +7,48 @@ import {
 import { Command } from "commander";
 import chalk4 from "chalk";
 
+// src/services/error-formatter.ts
+import chalk from "chalk";
+var printError = (message) => {
+  console.log();
+  console.log(chalk.red.bold("Error:"));
+  console.log(chalk.red(message));
+  console.log();
+};
+
+// src/services/headers-formatter.ts
+import chalk2 from "chalk";
+var printHeaders = (headers) => {
+  console.log(chalk2.blue("Response Headers:"));
+  console.log();
+  Object.entries(headers).forEach(([key2, value]) => {
+    console.log(`${chalk2.yellow(key2)} : ${chalk2.white(value)}`);
+  });
+  console.log();
+};
+
+// src/services/metadata-formatter.ts
+import chalk3 from "chalk";
+var formatBytes = (bytes) => {
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+  return `${(bytes / 1024).toFixed(2)} KB`;
+};
+var printMetadata = (metadata) => {
+  const { status, statusText, duration, size } = metadata;
+  const statusColor = status >= 200 && status < 300 ? chalk3.green : chalk3.red;
+  console.log();
+  console.log(chalk3.bold("Status:"), statusColor(`${status} ${statusText}`));
+  console.log(chalk3.bold("Time:"), chalk3.blue(`${duration} ms`));
+  console.log(chalk3.bold("Size:"), chalk3.blue(formatBytes(size)));
+  console.log(chalk3.blue("----------------------------------------"));
+};
+
 // src/services/request-service.ts
-var makeRequest = async (method, url3) => {
+var makeRequest = async (method, url3, headers) => {
   const start = Date.now();
-  const response = await fetch(url3, { method: method.toUpperCase() });
+  const response = await fetch(url3, { method: method.toUpperCase(), headers });
   const responseText = await response.text();
   const contentType = response.headers.get("Content-Type") || "";
   let data = responseText;
@@ -26,14 +64,14 @@ var makeRequest = async (method, url3) => {
   } else if (contentType.includes("text/html")) {
     dataType = "html";
   }
-  const headers = {};
+  const responseHeaders = {};
   response.headers.forEach((value, key2) => {
-    headers[key2] = value;
+    responseHeaders[key2] = value;
   });
   const end = Date.now();
   return {
     data,
-    headers,
+    headers: responseHeaders,
     dataType,
     metadata: {
       status: response.status,
@@ -19724,44 +19762,6 @@ var printResponse = async (data, dataType) => {
   }
 };
 
-// src/services/metadata-formatter.ts
-import chalk from "chalk";
-var formatBytes = (bytes) => {
-  if (bytes < 1024) {
-    return `${bytes} B`;
-  }
-  return `${(bytes / 1024).toFixed(2)} KB`;
-};
-var printMetadata = (metadata) => {
-  const { status, statusText, duration, size } = metadata;
-  const statusColor = status >= 200 && status < 300 ? chalk.green : chalk.red;
-  console.log();
-  console.log(chalk.bold("Status:"), statusColor(`${status} ${statusText}`));
-  console.log(chalk.bold("Time:"), chalk.blue(`${duration} ms`));
-  console.log(chalk.bold("Size:"), chalk.blue(formatBytes(size)));
-  console.log(chalk.blue("----------------------------------------"));
-};
-
-// src/services/headers-formatter.ts
-import chalk2 from "chalk";
-var printHeaders = (headers) => {
-  console.log(chalk2.blue("Response Headers:"));
-  console.log();
-  Object.entries(headers).forEach(([key2, value]) => {
-    console.log(`${chalk2.yellow(key2)} : ${chalk2.white(value)}`);
-  });
-  console.log();
-};
-
-// src/services/error-formatter.ts
-import chalk3 from "chalk";
-var printError = (message) => {
-  console.log();
-  console.log(chalk3.red.bold("Error:"));
-  console.log(chalk3.red(message));
-  console.log();
-};
-
 // src/utils/normalize-url.ts
 var normalizeUrl = (value) => {
   try {
@@ -19775,15 +19775,34 @@ var normalizeUrl = (value) => {
   }
 };
 
+// src/utils/parse-header.ts
+var parseHeader = (values) => {
+  const headers = {};
+  if (!values) return headers;
+  for (const value of values) {
+    const index = value.indexOf(":");
+    if (index == -1) throw new Error(`Invalid header: ${value}`);
+    const key2 = value.substring(0, index).trim();
+    const val = value.substring(index + 1).trim();
+    if (!key2 || !val) throw new Error(`Invalid header: ${value}`);
+    headers[key2] = val;
+  }
+  return headers;
+};
+
 // src/cli/commands/request.ts
 var setupRequestCommand = (program2) => {
-  program2.argument("<method>", "HTTP Method").argument("<url>", "API Endpoint URL").option("--show-headers", "Display response headers").action(async (method, url3, options8) => {
+  program2.argument("<method>", "HTTP Method").argument("<url>", "API Endpoint URL").option(
+    "-H, --header <header...>",
+    'Custom header in "Key: Value" format'
+  ).option("--show-headers", "Display response headers").action(async (method, url3, options8) => {
     try {
       const normalizedUrl = normalizeUrl(url3.trim());
+      const headers = parseHeader(options8.header);
       console.log(
         `Making ${method.toUpperCase()} request to: ${normalizedUrl.href}`
       );
-      const response = await makeRequest(method, normalizedUrl);
+      const response = await makeRequest(method, normalizedUrl, headers);
       printMetadata(response.metadata);
       if (options8.showHeaders) {
         printHeaders(response.headers);

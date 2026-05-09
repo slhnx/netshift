@@ -1,36 +1,40 @@
-export const makeRequest = async (method: string, url: URL) => {
+export const makeRequest = async (
+  method: string,
+  url: URL,
+  headers: Record<string, string>,
+) => {
   const start = Date.now();
 
-  const response = await fetch(url, { method: method.toUpperCase() });
+  const response = await fetch(url, { method: method.toUpperCase(), headers });
 
   const responseText = await response.text();
   const contentType = response.headers.get("Content-Type") || "";
 
   let data: unknown = responseText;
-  let dataType: string = '';
+  let dataType: string = "";
 
   if (contentType.includes("application/json")) {
     try {
       data = JSON.parse(responseText);
-      dataType = 'json';
+      dataType = "json";
     } catch (err) {
       data = responseText;
-      dataType = 'plain';
+      dataType = "plain";
     }
-  } else if (contentType.includes('text/html')) {
-    dataType = 'html';
+  } else if (contentType.includes("text/html")) {
+    dataType = "html";
   }
 
-  const headers: Record<string, string> = {};
+  const responseHeaders: Record<string, string> = {};
   response.headers.forEach((value, key) => {
-    headers[key] = value;
+    responseHeaders[key] = value;
   });
 
   const end = Date.now();
 
   return {
     data,
-    headers,
+    headers: responseHeaders,
     dataType,
     metadata: {
       status: response.status,
