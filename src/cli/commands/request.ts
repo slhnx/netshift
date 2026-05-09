@@ -3,6 +3,7 @@ import { printHeaders } from "@/services/headers-formatter";
 import { printMetadata } from "@/services/metadata-formatter";
 import { makeRequest } from "@/services/request-service";
 import { printResponse } from "@/services/response-formatter";
+import { applyQueryParams } from "@/utils/apply-query-params";
 import { normalizeUrl } from "@/utils/normalize-url";
 import { parseHeader } from "@/utils/parse-header";
 import { Command } from "commander";
@@ -14,18 +15,35 @@ export const setupRequestCommand = (program: Command) => {
     .option(
       "-H, --header <header...>",
       'Custom header in "Key: Value" format',
+      (values, previous: string[] = []) => {
+        previous.push(values);
+        return previous;
+      },
+      [],
+    )
+    .option(
+      "-Q, --query <query>",
+      'Query parameter in "key=value" format',
+      (value, previous: string[] = []) => {
+        previous.push(value);
+        return previous;
+      },
+      [],
     )
     .option("--show-headers", "Display response headers")
     .action(async (method, url, options) => {
       try {
-        const normalizedUrl = normalizeUrl(url.trim());
+        const normalizedURLWithParams = applyQueryParams(
+          normalizeUrl(url.trim()),
+          options.query,
+        );
         const headers = parseHeader(options.header);
 
         console.log(
-          `Making ${method.toUpperCase()} request to: ${normalizedUrl.href}`,
+          `Making ${method.toUpperCase()} request to: ${normalizedURLWithParams.href}`,
         );
 
-        const response = await makeRequest(method, normalizedUrl, headers);
+        const response = await makeRequest(method, normalizedURLWithParams, headers);
 
         printMetadata(response.metadata);
 

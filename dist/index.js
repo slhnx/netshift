@@ -19762,6 +19762,26 @@ var printResponse = async (data, dataType) => {
   }
 };
 
+// src/utils/apply-query-params.ts
+var applyQueryParams = (url3, queryParams) => {
+  if (!queryParams || !queryParams.length) {
+    return url3;
+  }
+  for (const param of queryParams) {
+    const index = param.indexOf("=");
+    if (index === -1) {
+      throw new Error(`Invalid query parameter: ${param}`);
+    }
+    const key2 = param.substring(0, index).trim();
+    const value = param.substring(index + 1).trim();
+    if (!key2) {
+      throw new Error(`Invalid query parameter: ${param}`);
+    }
+    url3.searchParams.append(key2, value);
+  }
+  return url3;
+};
+
 // src/utils/normalize-url.ts
 var normalizeUrl = (value) => {
   try {
@@ -19794,15 +19814,31 @@ var parseHeader = (values) => {
 var setupRequestCommand = (program2) => {
   program2.argument("<method>", "HTTP Method").argument("<url>", "API Endpoint URL").option(
     "-H, --header <header...>",
-    'Custom header in "Key: Value" format'
+    'Custom header in "Key: Value" format',
+    (values, previous = []) => {
+      previous.push(values);
+      return previous;
+    },
+    []
+  ).option(
+    "-Q, --query <query>",
+    'Query parameter in "key=value" format',
+    (value, previous = []) => {
+      previous.push(value);
+      return previous;
+    },
+    []
   ).option("--show-headers", "Display response headers").action(async (method, url3, options8) => {
     try {
-      const normalizedUrl = normalizeUrl(url3.trim());
+      const normalizedURLWithParams = applyQueryParams(
+        normalizeUrl(url3.trim()),
+        options8.query
+      );
       const headers = parseHeader(options8.header);
       console.log(
-        `Making ${method.toUpperCase()} request to: ${normalizedUrl.href}`
+        `Making ${method.toUpperCase()} request to: ${normalizedURLWithParams.href}`
       );
-      const response = await makeRequest(method, normalizedUrl, headers);
+      const response = await makeRequest(method, normalizedURLWithParams, headers);
       printMetadata(response.metadata);
       if (options8.showHeaders) {
         printHeaders(response.headers);
