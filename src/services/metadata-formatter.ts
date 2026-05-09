@@ -15,10 +15,19 @@ const formatBytes = (bytes: number) => {
   return `${(bytes / 1024).toFixed(2)} KB`;
 };
 
+const getStatusColor = (status: number) => {
+  if (status >= 200 && status < 300) return chalk.green;
+  if (status >= 300 && status < 400) return chalk.blue;
+  if (status >= 400 && status < 500) return chalk.yellow;
+  if (status >= 500) return chalk.red;
+  
+  return chalk.white;
+};
+
 export const printMetadata = (metadata: Metadata) => {
   const { status, statusText, duration, size } = metadata;
+  const statusColor = getStatusColor(status);
 
-  const statusColor = status >= 200 && status < 300 ? chalk.green : chalk.red;
   console.log();
 
   console.log(chalk.bold("Status:"), statusColor(`${status} ${statusText}`));

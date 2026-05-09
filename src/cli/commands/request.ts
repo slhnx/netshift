@@ -1,21 +1,72 @@
-import { Command } from "commander";
-import { makeRequest } from "@/services/request-service";
-import { printJSON } from "@/services/response-formatter";
+import { printError } from "@/services/error-formatter";
+import { printHeaders } from "@/services/headers-formatter";
 import { printMetadata } from "@/services/metadata-formatter";
+import { makeRequest } from "@/services/request-service";
+import { printResponse } from "@/services/response-formatter";
+import { applyQueryParams } from "@/utils/apply-query-params";
+import { normalizeUrl } from "@/utils/normalize-url";
+import { parseHeader } from "@/utils/parse-header";
+import chalk from "chalk";
+import { Command } from "commander";
+import ora from "ora";
 
 export const setupRequestCommand = (program: Command) => {
   program
     .argument("<method>", "HTTP Method")
     .argument("<url>", "API Endpoint URL")
-    .action(async (method, url) => {
-      try {
-        const response = await makeRequest(method, url);
-        printMetadata(response.metadata);
-        printJSON(response.data);
-      } catch (error) {
-        console.error("Request failed");
+    .option(
+      "-H, --header <header...>",
+      'Custom header in "Key: Value" format',
+      (values, previous: string[] = []) => {
+        previous.push(values);
+        return previous;
+      },
+      [],
+    )
+    .option(
+      "-Q, --query <query>",
+      'Query parameter in "key=value" format',
+      (value, previous: string[] = []) => {
+        previous.push(value);
+        return previous;
+      },
+      [],
+    )
+    .option("--show-headers", "Display response headers")
+    .action(async (method, url, options) => {
+      const spinner = ora().start();
 
-        console.error(error);
+      try {
+        const normalizedURLWithParams = applyQueryParams(
+          normalizeUrl(url.trim()),
+          options.query,
+        );
+        const headers = parseHeader(options.header);
+
+        spinner.text = chalk.green(
+          `Making ${method.toUpperCase()} request to: ${normalizedURLWithParams.href}`,
+        );
+
+        const response = await makeRequest(
+          method,
+          normalizedURLWithParams,
+          headers,
+        );
+
+        spinner.succeed("Request completed successfully");
+
+        printMetadata(response.metadata);
+
+        if (options.showHeaders) {
+          printHeaders(response.headers);
+        }
+
+        await printResponse(response.data, response.dataType);
+      } catch (error) {
+        spinner.fail("❌ Request failed");
+        if (error instanceof Error) {
+          printError(error.message);
+        }
       }
     });
 };
