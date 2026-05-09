@@ -35,9 +35,16 @@ var formatBytes = (bytes) => {
   }
   return `${(bytes / 1024).toFixed(2)} KB`;
 };
+var getStatusColor = (status) => {
+  if (status >= 200 && status < 300) return chalk3.green;
+  if (status >= 300 && status < 400) return chalk3.blue;
+  if (status >= 400 && status < 500) return chalk3.yellow;
+  if (status >= 500) return chalk3.red;
+  return chalk3.white;
+};
 var printMetadata = (metadata) => {
   const { status, statusText, duration, size } = metadata;
-  const statusColor = status >= 200 && status < 300 ? chalk3.green : chalk3.red;
+  const statusColor = getStatusColor(status);
   console.log();
   console.log(chalk3.bold("Status:"), statusColor(`${status} ${statusText}`));
   console.log(chalk3.bold("Time:"), chalk3.blue(`${duration} ms`));
