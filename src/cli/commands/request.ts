@@ -6,7 +6,9 @@ import { printResponse } from "@/services/response-formatter";
 import { applyQueryParams } from "@/utils/apply-query-params";
 import { normalizeUrl } from "@/utils/normalize-url";
 import { parseHeader } from "@/utils/parse-header";
+import chalk from "chalk";
 import { Command } from "commander";
+import ora from "ora";
 
 export const setupRequestCommand = (program: Command) => {
   program
@@ -32,6 +34,8 @@ export const setupRequestCommand = (program: Command) => {
     )
     .option("--show-headers", "Display response headers")
     .action(async (method, url, options) => {
+      const spinner = ora().start();
+
       try {
         const normalizedURLWithParams = applyQueryParams(
           normalizeUrl(url.trim()),
@@ -39,11 +43,17 @@ export const setupRequestCommand = (program: Command) => {
         );
         const headers = parseHeader(options.header);
 
-        console.log(
+        spinner.text = chalk.green(
           `Making ${method.toUpperCase()} request to: ${normalizedURLWithParams.href}`,
         );
 
-        const response = await makeRequest(method, normalizedURLWithParams, headers);
+        const response = await makeRequest(
+          method,
+          normalizedURLWithParams,
+          headers,
+        );
+
+        spinner.succeed("Request completed successfully");
 
         printMetadata(response.metadata);
 
@@ -53,6 +63,7 @@ export const setupRequestCommand = (program: Command) => {
 
         await printResponse(response.data, response.dataType);
       } catch (error) {
+        spinner.fail("❌ Request failed");
         if (error instanceof Error) {
           printError(error.message);
         }

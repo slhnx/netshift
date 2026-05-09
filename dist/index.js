@@ -5,7 +5,7 @@ import {
 
 // src/cli/index.ts
 import { Command } from "commander";
-import chalk4 from "chalk";
+import chalk5 from "chalk";
 
 // src/services/error-formatter.ts
 import chalk from "chalk";
@@ -19818,6 +19818,8 @@ var parseHeader = (values) => {
 };
 
 // src/cli/commands/request.ts
+import chalk4 from "chalk";
+import ora from "ora";
 var setupRequestCommand = (program2) => {
   program2.argument("<method>", "HTTP Method").argument("<url>", "API Endpoint URL").option(
     "-H, --header <header...>",
@@ -19836,22 +19838,29 @@ var setupRequestCommand = (program2) => {
     },
     []
   ).option("--show-headers", "Display response headers").action(async (method, url3, options8) => {
+    const spinner = ora().start();
     try {
       const normalizedURLWithParams = applyQueryParams(
         normalizeUrl(url3.trim()),
         options8.query
       );
       const headers = parseHeader(options8.header);
-      console.log(
+      spinner.text = chalk4.green(
         `Making ${method.toUpperCase()} request to: ${normalizedURLWithParams.href}`
       );
-      const response = await makeRequest(method, normalizedURLWithParams, headers);
+      const response = await makeRequest(
+        method,
+        normalizedURLWithParams,
+        headers
+      );
+      spinner.succeed("Request completed successfully");
       printMetadata(response.metadata);
       if (options8.showHeaders) {
         printHeaders(response.headers);
       }
       await printResponse(response.data, response.dataType);
     } catch (error) {
+      spinner.fail("\u274C Request failed");
       if (error instanceof Error) {
         printError(error.message);
       }
@@ -19863,7 +19872,7 @@ var setupRequestCommand = (program2) => {
 var program = new Command();
 program.name("NetShift").description("NetShift - terminal-first API workflow tool").version("0.1.0");
 program.command("ping").description("Checks if NetShift is alive \u2705").action(() => {
-  console.log(chalk4.green("NetShift is alive and ready to serve! \u{1F680}"));
+  console.log(chalk5.green("NetShift is alive and ready to serve! \u{1F680}"));
 });
 setupRequestCommand(program);
 program.parse();
