@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { makeRequest } from "@/services/request-service";
-import { printJSON } from "@/services/response-formatter";
+import { printJSON, printResponse } from "@/services/response-formatter";
 import { printMetadata } from "@/services/metadata-formatter";
 import { printHeaders } from "@/services/headers-formatter";
 import { parseURL } from "@/utils/parse-url";
@@ -15,12 +15,9 @@ export const setupRequestCommand = (program: Command) => {
     .action(async (method, url, options) => {
       try {
         const normalizedUrl = normalizeUrl(url.trim());
-
-        if (!parseURL(normalizedUrl)) {
-          printError("❌ Invalid URL provided. Please provide a valid URL.");
-          return;
-        }
-
+        console.log(
+          `Making ${method.toUpperCase()} request to: ${normalizedUrl.href}`,
+        );
         const response = await makeRequest(method, normalizedUrl);
 
         printMetadata(response.metadata);
@@ -29,7 +26,7 @@ export const setupRequestCommand = (program: Command) => {
           printHeaders(response.headers);
         }
 
-        printJSON(response.data);
+        await printResponse(response.data, response.dataType);
       } catch (error) {
         if (error instanceof Error) {
           printError(error.message);
