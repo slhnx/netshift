@@ -2,7 +2,7 @@ export const makeRequest = async (
   method: string,
   url: URL,
   headers: Record<string, string>,
-  body?: JSON | undefined,
+  body?: JSON | string | undefined,
 ) => {
   const start = Date.now();
 

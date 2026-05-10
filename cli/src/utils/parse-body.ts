@@ -1,12 +1,31 @@
 import chalk from "chalk";
 
-export const parseBody = (data: string | undefined): JSON | undefined => {
+const isJSON = (str: string): boolean => {
+  try {
+    JSON.parse(str);
+    return true;
+  } catch (err) {
+    return false;
+  }
+};
+
+export const parseBody = (
+  data: string | undefined,
+): JSON | string | undefined => {
   if (!data) return undefined;
 
   try {
-    return JSON.parse(data);
+    if (isJSON(data)) {
+      return JSON.parse(data);
+    }
+
+    return data;
   } catch (err) {
-    console.error(chalk.red("Failed to parse request body as JSON. Please ensure it's valid JSON."));
+    console.error(
+      chalk.red(
+        "Failed to parse request body! Please ensure it's valid JSON or a string.",
+      ),
+    );
     return undefined;
   }
-}
+};
