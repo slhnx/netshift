@@ -1,4 +1,4 @@
-export const parseHeader = (values: string[] | undefined): Record<string, string> => {
+export const parseHeader = (values: string[] | undefined, body?: JSON | string): Record<string, string> => {
   const headers: Record<string, string> = {};
 
   if (!values) return headers;
@@ -14,6 +14,14 @@ export const parseHeader = (values: string[] | undefined): Record<string, string
     if (!key || !val) throw new Error(`Invalid header: ${value}`);
     
     headers[key] = val;
+  }
+
+  if (body && !headers["Content-Type"]) {
+    if (typeof body === "object") {
+      headers["Content-Type"] = "application/json";
+    } else if (typeof body === "string") {
+      headers["Content-Type"] = "text/plain";
+    }
   }
 
   return headers;

@@ -43,8 +43,8 @@ export const setupRequestCommand = (program: Command) => {
           normalizeUrl(url.trim()),
           options.query,
         );
-        const headers = parseHeader(options.header);
         const body = parseBody(options.data);
+        const headers = parseHeader(options.header, body);
 
         spinner.text = chalk.green(
           `Making ${method.toUpperCase()} request to: ${normalizedURLWithParams.href}`,
