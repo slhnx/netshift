@@ -2,10 +2,15 @@ export const makeRequest = async (
   method: string,
   url: URL,
   headers: Record<string, string>,
+  body?: JSON | undefined,
 ) => {
   const start = Date.now();
 
-  const response = await fetch(url, { method: method.toUpperCase(), headers });
+  const response = await fetch(url, {
+    method: method.toUpperCase(),
+    headers,
+    body: JSON.stringify(body),
+  });
 
   const responseText = await response.text();
   const contentType = response.headers.get("Content-Type") || "";

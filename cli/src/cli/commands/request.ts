@@ -5,6 +5,7 @@ import { makeRequest } from "@/services/request-service";
 import { printResponse } from "@/services/response-formatter";
 import { applyQueryParams } from "@/utils/apply-query-params";
 import { normalizeUrl } from "@/utils/normalize-url";
+import { parseBody } from "@/utils/parse-body";
 import { parseHeader } from "@/utils/parse-header";
 import chalk from "chalk";
 import { Command } from "commander";
@@ -32,6 +33,7 @@ export const setupRequestCommand = (program: Command) => {
       },
       [],
     )
+    .option('-d, --data <data>', 'Request body data (for POST, PUT, PATCH)')
     .option("--show-headers", "Display response headers")
     .action(async (method, url, options) => {
       const spinner = ora().start();
@@ -42,6 +44,7 @@ export const setupRequestCommand = (program: Command) => {
           options.query,
         );
         const headers = parseHeader(options.header);
+        const body = parseBody(options.data);
 
         spinner.text = chalk.green(
           `Making ${method.toUpperCase()} request to: ${normalizedURLWithParams.href}`,
@@ -51,6 +54,7 @@ export const setupRequestCommand = (program: Command) => {
           method,
           normalizedURLWithParams,
           headers,
+          body
         );
 
         spinner.succeed("Request completed successfully");
