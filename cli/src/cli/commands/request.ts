@@ -5,7 +5,9 @@ import { makeRequest } from "@/services/request-service";
 import { printResponse } from "@/services/response-formatter";
 import { applyQueryParams } from "@/utils/apply-query-params";
 import { normalizeUrl } from "@/utils/normalize-url";
+import { parseBody } from "@/utils/parse-body";
 import { parseHeader } from "@/utils/parse-header";
+import { validateHttpMethod } from "@/utils/validate-http-method";
 import chalk from "chalk";
 import { Command } from "commander";
 import ora from "ora";
@@ -32,36 +34,67 @@ export const setupRequestCommand = (program: Command) => {
       },
       [],
     )
+    .option("-d, --data <data>", "Request body data (for POST, PUT, PATCH)")
     .option("--show-headers", "Display response headers")
+    .option("--timeout <timeout>", "Request timeout in milliseconds")
+    .option(
+      "--retry <retryCount>",
+      "Number of retry attempts for failed requests",
+    )
     .action(async (method, url, options) => {
       const spinner = ora().start();
+      const normalizedMethod = validateHttpMethod(method);
+      const retryCount = options.retry ? Number(options.retry) : 0;
+
+      if (!Number.isInteger(retryCount) || retryCount < 0) {
+        printError("Retry count must be a non-negative integer");
+        return;
+      }
+
+      const timeoutMs = options.timeout
+        ? Number(options.timeout) * 1000
+        : undefined;
 
       try {
         const normalizedURLWithParams = applyQueryParams(
           normalizeUrl(url.trim()),
           options.query,
         );
-        const headers = parseHeader(options.header);
+        const body = parseBody(options.data);
+        const headers = parseHeader(options.header, body);
 
         spinner.text = chalk.green(
           `Making ${method.toUpperCase()} request to: ${normalizedURLWithParams.href}`,
         );
 
+        if (
+          timeoutMs !== undefined &&
+          (!Number.isFinite(timeoutMs) || timeoutMs <= 0)
+        ) {
+          printError("Timeout must be a positive number");
+          return;
+        }
+
         const response = await makeRequest(
-          method,
+          normalizedMethod,
           normalizedURLWithParams,
           headers,
+          body,
+          timeoutMs,
+          retryCount,
         );
 
         spinner.succeed("Request completed successfully");
 
-        printMetadata(response.metadata);
+        if (response) {
+          printMetadata(response.metadata);
 
-        if (options.showHeaders) {
-          printHeaders(response.headers);
+          if (options.showHeaders) {
+            printHeaders(response.headers);
+          }
+
+          await printResponse(response.data, response.dataType);
         }
-
-        await printResponse(response.data, response.dataType);
       } catch (error) {
         spinner.fail("❌ Request failed");
         if (error instanceof Error) {
