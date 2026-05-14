@@ -7,6 +7,7 @@ import { applyQueryParams } from "@/utils/apply-query-params";
 import { normalizeUrl } from "@/utils/normalize-url";
 import { parseBody } from "@/utils/parse-body";
 import { parseHeader } from "@/utils/parse-header";
+import { validateHttpMethod } from "@/utils/validate-http-method";
 import chalk from "chalk";
 import { Command } from "commander";
 import ora from "ora";
@@ -37,6 +38,7 @@ export const setupRequestCommand = (program: Command) => {
     .option("--show-headers", "Display response headers")
     .action(async (method, url, options) => {
       const spinner = ora().start();
+      const normalizedMethod = validateHttpMethod(method);
 
       try {
         const normalizedURLWithParams = applyQueryParams(
@@ -51,7 +53,7 @@ export const setupRequestCommand = (program: Command) => {
         );
 
         const response = await makeRequest(
-          method,
+          normalizedMethod,
           normalizedURLWithParams,
           headers,
           body
