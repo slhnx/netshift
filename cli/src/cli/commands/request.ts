@@ -34,11 +34,16 @@ export const setupRequestCommand = (program: Command) => {
       },
       [],
     )
-    .option('-d, --data <data>', 'Request body data (for POST, PUT, PATCH)')
+    .option("-d, --data <data>", "Request body data (for POST, PUT, PATCH)")
     .option("--show-headers", "Display response headers")
+    .option("--timeout <timeout>", "Request timeout in milliseconds")
     .action(async (method, url, options) => {
       const spinner = ora().start();
       const normalizedMethod = validateHttpMethod(method);
+
+      const timeoutMs = options.timeout
+        ? Number(options.timeout) * 1000
+        : undefined;
 
       try {
         const normalizedURLWithParams = applyQueryParams(
@@ -52,11 +57,20 @@ export const setupRequestCommand = (program: Command) => {
           `Making ${method.toUpperCase()} request to: ${normalizedURLWithParams.href}`,
         );
 
+        if (
+          timeoutMs !== undefined &&
+          (!Number.isFinite(timeoutMs) || timeoutMs <= 0)
+        ) {
+          printError("Timeout must be a positive number");
+          return;
+        }
+
         const response = await makeRequest(
           normalizedMethod,
           normalizedURLWithParams,
           headers,
-          body
+          body,
+          timeoutMs,
         );
 
         spinner.succeed("Request completed successfully");
