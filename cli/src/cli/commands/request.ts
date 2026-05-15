@@ -3,6 +3,7 @@ import { printHeaders } from "@/services/headers-formatter";
 import { printMetadata } from "@/services/metadata-formatter";
 import { makeRequest } from "@/services/request-service";
 import { printResponse } from "@/services/response-formatter";
+import { formatResponseForOutput } from "@/services/response-output";
 import { applyQueryParams } from "@/utils/apply-query-params";
 import { normalizeUrl } from "@/utils/normalize-url";
 import { parseBody } from "@/utils/parse-body";
@@ -11,6 +12,8 @@ import { validateHttpMethod } from "@/utils/validate-http-method";
 import chalk from "chalk";
 import { Command } from "commander";
 import ora from "ora";
+import path from "path";
+import { writeFile } from "node:fs/promises";
 
 export const setupRequestCommand = (program: Command) => {
   program
@@ -42,6 +45,10 @@ export const setupRequestCommand = (program: Command) => {
       "Number of retry attempts for failed requests",
     )
     .option("--no-truncate", "Do not truncate long responses in the output")
+    .option(
+      "--output <file>",
+      "Save response to a file instead of printing to console",
+    )
     .action(async (method, url, options) => {
       const spinner = ora().start();
       const normalizedMethod = validateHttpMethod(method);
@@ -95,8 +102,18 @@ export const setupRequestCommand = (program: Command) => {
           }
 
           await printResponse(response.data, response.dataType, {
-            truncate: options.truncate
+            truncate: options.truncate,
           });
+        }
+
+        if (options.output) {
+          const outputText = await formatResponseForOutput(
+            response?.data,
+            response?.dataType as any,
+          );
+
+          const outputPath = path.resolve(options.output);
+          await writeFile(outputPath, outputText, "utf8");
         }
       } catch (error) {
         spinner.fail("❌ Request failed");
