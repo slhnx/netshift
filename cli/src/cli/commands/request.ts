@@ -41,10 +41,11 @@ export const setupRequestCommand = (program: Command) => {
       "--retry <retryCount>",
       "Number of retry attempts for failed requests",
     )
+    .option("--no-truncate", "Do not truncate long responses in the output")
     .action(async (method, url, options) => {
       const spinner = ora().start();
       const normalizedMethod = validateHttpMethod(method);
-      const retryCount = options.retry ? Number(options.retry) : 0;
+      const retryCount = options.retry ? Number(options.retry) : 1;
 
       if (!Number.isInteger(retryCount) || retryCount < 0) {
         printError("Retry count must be a non-negative integer");
@@ -93,7 +94,9 @@ export const setupRequestCommand = (program: Command) => {
             printHeaders(response.headers);
           }
 
-          await printResponse(response.data, response.dataType);
+          await printResponse(response.data, response.dataType, {
+            truncate: options.truncate
+          });
         }
       } catch (error) {
         spinner.fail("❌ Request failed");
