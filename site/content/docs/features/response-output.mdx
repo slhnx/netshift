@@ -1,0 +1,60 @@
+---
+title: Response Output
+description: How NetShift displays response metadata, headers, and formatted bodies.
+---
+
+# Response Output
+
+When a request finishes, NetShift formats the response to provide you with all the essential information at a glance, directly in your terminal.
+
+## Response Metadata
+
+Every successful request prints a metadata block before displaying the response body. This block gives you a quick overview of the transaction.
+
+### Displayed Values
+
+- **Status Code & Text**: The HTTP status code returned by the server (e.g., `200 OK`, `404 Not Found`).
+- **Time**: The total duration of the request in milliseconds.
+- **Size**: The size of the response body, automatically formatted in bytes or kilobytes for readability.
+
+**Example Output:**
+
+```bash
+Status: 200 OK
+Time: 143 ms
+Size: 1.42 KB
+----------------------------------------
+```
+
+## Response Headers
+
+By default, response headers are hidden to keep the terminal output clean. If you need to inspect the headers returned by the server, you can use the `--show-headers` flag.
+
+### Usage
+
+```bash
+ns get https://httpbin.org/get --show-headers
+```
+
+### Example Output
+
+When enabled, the headers are printed immediately after the metadata block:
+
+```bash
+Response Headers:
+
+content-type : application/json
+date : Fri, 09 May 2026 12:00:00 GMT
+```
+
+## Response Formatting
+
+NetShift automatically attempts to format and syntax-highlight the response body based on its content type.
+
+### JSON Responses
+
+If the response is JSON, NetShift will parse it, pretty-print it with standard indentation, and apply syntax highlighting to make it easy to read.
+
+### HTML Responses
+
+If the response is HTML, NetShift uses Prettier to format the markup before displaying it with syntax highlighting.
