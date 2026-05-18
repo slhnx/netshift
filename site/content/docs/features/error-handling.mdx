@@ -1,0 +1,34 @@
+---
+title: Error Handling
+description: How NetShift formats and displays errors.
+---
+
+# Error Handling
+
+When things go wrong—whether due to a malformed URL, an invalid header, or a network failure—NetShift catches the error and formats it so it's easy to read.
+
+## Error Formatting
+
+Errors are rendered using a dedicated formatter. Instead of dumping a raw stack trace or a messy JSON object into your terminal, NetShift prints a clear, concise error block.
+
+### Example: Invalid URL
+
+If you provide a string that cannot be parsed as a URL, NetShift stops the request and outputs:
+
+```bash
+Error:
+Invalid URL provided. Please provide a valid URL.
+```
+
+### Example: Invalid Header Syntax
+
+If you attempt to send a custom header without the required colon (`:`), NetShift will catch it during the validation phase:
+
+```bash
+Error:
+Invalid header format: "Accept application/json". Expected "Key: Value".
+```
+
+## Network Errors
+
+If the request fails due to a network issue (like the server being unreachable or a DNS resolution failure), the underlying system error message is captured and displayed in the same standardized error block.

@@ -1,0 +1,42 @@
+---
+title: Query Parameters
+description: Appending dynamic query parameters to your requests.
+---
+
+# Query Parameters
+
+Instead of manually constructing long URLs with query strings, NetShift provides a convenient way to pass query parameters dynamically using the command line flags.
+
+## Usage
+
+Use the `-Q` or `--query` flag followed by the parameter key and value formatted as `key=value`.
+
+You can pass multiple query parameters by repeating the flag.
+
+```bash
+ns <method> <url> -Q "key1=value1" -Q "key2=value2"
+```
+
+## Examples
+
+**Pagination & Filtering**
+
+```bash
+ns get https://api.example.com/items \
+  -Q "page=1" \
+  -Q "limit=10"
+```
+
+**Adding debug flags**
+
+```bash
+ns get https://api.example.com/status \
+  -Q "debug=true" \
+  -Q "source=netshift"
+```
+
+## Behavior
+
+- The values provided are appended to the URL as a standard query string (`?key1=value1&key2=value2`).
+- They are appended in the exact order you provide them in the command.
+- If the original URL already contains a query string, the new parameters are appended gracefully (using `&` instead of `?`).

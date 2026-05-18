@@ -18,108 +18,22 @@ ns ping
 
 If the CLI is installed and working, `ping` prints a simple health check message.
 
-## Commands
+## Features Overview
 
-### `ping`
+NetShift provides a solid set of core features to make interacting with APIs from your terminal a breeze. Explore the documentation to learn more about each feature:
 
-Checks whether the CLI is available.
+- **[Ping Command](/docs/features/ping)**: Check the availability of the CLI.
+- **[HTTP Requests](/docs/features/http-requests)**: Send requests using any HTTP method.
+- **[Query Parameters](/docs/features/query-parameters)**: Easily append dynamic query parameters.
+- **[Custom Headers](/docs/features/headers)**: Send custom headers for authentication or content negotiation.
+- **[Response Output](/docs/features/response-output)**: View request metadata, response headers, and beautifully formatted JSON/HTML bodies.
+- **[Error Handling](/docs/features/error-handling)**: Clear, readable error messages instead of messy stack traces.
 
-```bash
-ns ping
-```
+## Project Architecture
 
-Expected output:
+The CLI is organized around a few small pieces to keep it easy to extend:
 
-```bash
-NetShift is alive and ready to serve! 🚀
-```
-
-### HTTP request
-
-The main request flow uses the HTTP method and URL you provide:
-
-```bash
-ns get https://jsonplaceholder.typicode.com/todos/1
-```
-
-You can also send headers and query parameters:
-
-```bash
-ns post https://httpbin.org/post \
-	-H "Content-Type: application/json" \
-	-H "Authorization: Bearer token" \
-	-Q "source=netshift" \
-	-Q "debug=true"
-```
-
-## Request Options
-
-The current CLI supports these request options:
-
-- `-H, --header <header...>` for repeated `Key: Value` headers
-- `-Q, --query <query>` for repeated `key=value` query parameters
-- `--show-headers` to print the response headers after the metadata block
-
-Rules for input parsing:
-
-- Headers must contain a colon.
-- Query values are appended in the order you provide them.
-- URLs are normalized before the request is sent.
-
-## Response Output
-
-Every successful request prints a metadata block first:
-
-```bash
-Status: 200 OK
-Time: 143 ms
-Size: 1.42 KB
-----------------------------------------
-```
-
-When `--show-headers` is enabled, the response headers appear next:
-
-```bash
-Response Headers:
-
-content-type : application/json
-date : Fri, 10 May 2026 12:00:00 GMT
-```
-
-JSON and HTML responses are formatted for readability before they are printed to the terminal.
-
-## Example Workflows
-
-### Inspect a JSON endpoint
-
-```bash
-ns get https://jsonplaceholder.typicode.com/posts/1
-```
-
-### Check headers from an API
-
-```bash
-ns get https://httpbin.org/headers --show-headers
-```
-
-### Send a request with auth and query params
-
-```bash
-ns get https://api.example.com/items \
-	-H "Accept: application/json" \
-	-H "Authorization: Bearer your-token" \
-	-Q "page=1" \
-	-Q "limit=10"
-```
-
-## Project Notes
-
-The CLI is organized around a few small pieces:
-
-- request parsing and command wiring in `src/cli/commands/request.ts`
-- request execution in `src/services/request-service.ts`
-- output formatting for metadata, headers, response bodies, and errors
-- utility helpers for URL normalization, query parameters, and header parsing
-
-That structure keeps the CLI easy to extend as more commands and request features are added.
-
+- Request parsing and command wiring in `src/cli/commands/request.ts`
+- Request execution in `src/services/request-service.ts`
+- Output formatting for metadata, headers, response bodies, and errors
+- Utility helpers for URL normalization, query parameters, and header parsing

@@ -1,0 +1,54 @@
+---
+title: Custom Headers
+description: Sending custom HTTP headers with your requests.
+---
+
+# Custom Headers
+
+Many APIs require specific headers for authentication, content negotiation, or custom tracing. NetShift allows you to pass one or more custom headers seamlessly.
+
+## Usage
+
+Use the `-H` or `--header` flag followed by the header in `Key: Value` format.
+
+You can specify multiple headers by repeating the flag.
+
+```bash
+ns <method> <url> -H "Header-Key: Header-Value"
+```
+
+## Examples
+
+**Sending JSON data (Content-Type)**
+
+```bash
+ns post https://httpbin.org/post -H "Content-Type: application/json"
+```
+
+**Authentication (Bearer Token)**
+
+```bash
+ns get https://api.example.com/protected -H "Authorization: Bearer my-secret-token"
+```
+
+**Multiple Headers**
+
+```bash
+ns get https://api.example.com/items \
+  -H "Accept: application/json" \
+  -H "X-Request-Source: netshift"
+```
+
+## Syntax Rules
+
+NetShift enforces a few rules to ensure your headers are valid before sending the request:
+
+1. **Colon separator**: Each header must contain a colon (`:`). If the colon is missing, the CLI will raise an error.
+2. **Trimming**: NetShift automatically trims whitespace around the header key and value, so `-H "Key : Value"` is parsed correctly as `Key: Value`.
+
+Example of an **invalid** header that will be rejected:
+
+```bash
+# This will fail because it lacks a colon
+ns get https://api.example.com/items -H "Accept application/json"
+```
