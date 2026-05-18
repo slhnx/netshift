@@ -1,0 +1,51 @@
+---
+title: HTTP Requests
+description: Making basic HTTP requests and URL normalization.
+---
+
+# HTTP Requests
+
+The core feature of NetShift is making HTTP requests directly from your terminal. It supports standard HTTP methods and automatically handles URL validation and normalization before any request is sent.
+
+## Usage
+
+The general syntax for making a request is:
+
+```bash
+ns <method> <url> [options]
+```
+
+### Supported Methods
+
+You can use standard HTTP methods like `GET`, `POST`, `PUT`, `PATCH`, and `DELETE`. The method name is case-insensitive.
+
+## Examples
+
+**Fetching a resource (GET)**
+
+```bash
+ns get https://jsonplaceholder.typicode.com/todos/1
+```
+
+**Submitting data (POST)**
+
+When testing endpoints that receive data, you can specify the `POST` method. *Note: Advanced body payloads are planned for future releases.*
+
+```bash
+ns post https://httpbin.org/post
+```
+
+## URL Validation & Normalization
+
+Before a request starts, NetShift processes the provided URL:
+1. Trims any surrounding whitespace.
+2. Validates that it's a properly formatted URL structure.
+3. Automatically fixes missing protocols if possible.
+
+When you run a command, you will see a confirmation message indicating exactly where the request is heading:
+
+```bash
+Making GET request to: https://jsonplaceholder.typicode.com/todos/1
+```
+
+This helps you ensure your request was parsed exactly as intended.
