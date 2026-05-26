@@ -20,7 +20,7 @@ const getStatusColor = (status: number) => {
   if (status >= 300 && status < 400) return chalk.blue;
   if (status >= 400 && status < 500) return chalk.yellow;
   if (status >= 500) return chalk.red;
-  
+
   return chalk.white;
 };
 
