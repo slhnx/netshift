@@ -75,16 +75,23 @@ export const makeRequest = async (
     } catch (err) {
       lastError = err;
 
-      
       const isAbortError = err instanceof Error && err.name === "AbortError";
       if (attempt < retryCount && isAbortError) {
-        console.log(chalk.yellow(`Request timed out, retrying... (${attempt + 1}/${retryCount})`));
+        console.log(
+          chalk.yellow(
+            `Request timed out, retrying... (${attempt + 1}/${retryCount})`,
+          ),
+        );
         await sleep(250 * (attempt + 1));
-        continue; 
+        continue;
       }
 
       if (attempt < retryCount && !(err instanceof SyntaxError)) {
-        console.log(chalk.yellow(`Request timed out, retrying... (${attempt + 1}/${retryCount})`));
+        console.log(
+          chalk.yellow(
+            `Request timed out, retrying... (${attempt + 1}/${retryCount})`,
+          ),
+        );
         await sleep(250 * (attempt + 1));
         continue;
       }
