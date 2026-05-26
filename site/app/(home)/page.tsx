@@ -1,9 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "motion/react";
 import {
   ArrowRight,
   BookOpen,
+  Check,
+  Copy,
   FileCode2,
   FolderTree,
   Globe,
@@ -27,6 +30,8 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function Index() {
+  const [copied, setCopied] = useState(false);
+
   return (
     <div className="relative min-h-screen">
       <div
@@ -76,14 +81,42 @@ export default function Index() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="mt-7 flex flex-wrap items-center gap-2.5"
+              className="mt-7 flex flex-wrap items-center gap-3"
             >
-              <Button>
-                Install with npm
-                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-              </Button>
+              <a
+                href="https://www.npmjs.com/package/netshift"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button className="cursor-pointer">
+                  Install with npm
+                  <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                </Button>
+              </a>
+
+              {/* Install command box with copy button */}
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-card/60 px-3 py-1.5 font-mono text-sm text-foreground backdrop-blur-sm shadow-sm">
+                <span className="text-muted-foreground select-none">$</span>
+                <span className="font-medium">npm i -g netshift</span>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText("npm i -g netshift");
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="ml-1.5 flex items-center justify-center rounded-md p-1 hover:bg-accent text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                  title="Copy command"
+                >
+                  {copied ? (
+                    <Check className="h-3.5 w-3.5 text-emerald-500" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              </div>
+
               <Link href="/docs">
-                <Button variant="outline">
+                <Button variant="outline" className="cursor-pointer">
                   <BookOpen className="h-3.5 w-3.5" />
                   Documentation
                 </Button>
