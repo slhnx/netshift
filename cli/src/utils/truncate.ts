@@ -3,10 +3,7 @@ type TruncateOptions = {
   isTruncated: boolean;
 };
 
-export const truncate = (
-  text: string,
-  maxLength: number,
-): TruncateOptions => {
+export const truncate = (text: string, maxLength: number): TruncateOptions => {
   if (text.length <= maxLength) {
     return { text, isTruncated: false };
   }

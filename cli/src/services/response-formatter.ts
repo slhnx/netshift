@@ -51,7 +51,11 @@ export const printHTML = async (
   }
 };
 
-export const printResponse = async (data: unknown, dataType: string, options: PrettyResponseOptions) => {
+export const printResponse = async (
+  data: unknown,
+  dataType: string,
+  options: PrettyResponseOptions,
+) => {
   switch (dataType) {
     case "json":
       printJSON(data, options);
