@@ -14,3 +14,4 @@ export interface RequestDefinition {
   };
   variables?: Record<string, string>;
 }
+
