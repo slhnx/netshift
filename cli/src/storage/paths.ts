@@ -7,3 +7,4 @@ export const HISTORY_FILE = path.join(NETSHIFT_DIR, "history.json");
 export const PROJECTS_DIR = path.join(NETSHIFT_DIR, "projects");
 export const COLLECTIONS_DIR = path.join(NETSHIFT_DIR, "collections");
 export const ENVS_DIR = path.join(NETSHIFT_DIR, "envs");
+export const REQUESTS_DIR = path.join(NETSHIFT_DIR, "requests");

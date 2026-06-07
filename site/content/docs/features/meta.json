@@ -6,6 +6,7 @@
     "query-parameters",
     "headers",
     "response-output",
-    "error-handling"
+    "error-handling",
+    "saved-requests"
   ]
 }
