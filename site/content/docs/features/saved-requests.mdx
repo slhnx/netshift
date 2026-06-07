@@ -1,0 +1,100 @@
+---
+title: Saved Requests
+description: Save HTTP request configurations and run them later with a single command.
+---
+
+# Saved Requests
+
+NetShift allows you to save HTTP request configurations so that you can easily rerun them later without typing out the full method, URL, headers, query parameters, or request bodies every time.
+
+## Saving a Request
+
+You can save any HTTP request by appending the `--save` option followed by a unique name to your request command.
+
+### Usage
+
+```bash
+ns <method> <url> [options] --save <requestName>
+```
+
+### Examples
+
+**Saving a simple GET request**
+
+```bash
+ns get https://api.github.com/users/octocat --save get-octocat
+```
+
+**Saving a request with headers and query parameters**
+
+```bash
+ns post https://httpbin.org/post \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer my-secret-token" \
+  -d '{"status": "active"}' \
+  --timeout 5 \
+  --retry 3 \
+  --save create-user
+```
+
+### What gets saved?
+
+When you save a request, NetShift stores the entire request configuration, including:
+- HTTP Method (e.g., `GET`, `POST`)
+- Normalized URL (including query parameters appended via the `-Q` or `--query` options)
+- Request Headers (added via the `-H` or `--header` options)
+- Request Body Data (added via the `-d` or `--data` options)
+- Timeout settings (in milliseconds)
+- Retry count
+
+---
+
+## Running a Saved Request
+
+To execute a previously saved request, use the `run` command followed by the saved request's name.
+
+### Usage
+
+```bash
+ns run <requestName>
+```
+
+### Examples
+
+**Running the previously saved `get-octocat` request**
+
+```bash
+ns run get-octocat
+```
+
+This will load the saved request details, perform the request, print the response metadata, and print the response body just like a normal request command.
+
+---
+
+## Storage & Configuration
+
+Saved requests are stored locally on your machine as JSON files under the NetShift home directory:
+
+```bash
+~/.netshift/requests/<requestName>.json
+```
+
+### Format
+
+Each saved request is represented by a JSON file with the following schema:
+
+```json
+{
+  "id": "e3b88b0a-313d-4c3e-8c33-8c460a87a211",
+  "name": "get-octocat",
+  "method": "GET",
+  "url": "https://api.github.com/users/octocat",
+  "headers": {},
+  "body": null,
+  "timeoutMs": 5000,
+  "retryCount": 1,
+  "createdAt": "2026-06-07T11:45:00.000Z"
+}
+```
+
+Since these are plain JSON files, you can easily inspect, modify, or manually delete them directly from your file manager or command line if you wish to remove or update a saved request.

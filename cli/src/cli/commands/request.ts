@@ -2,6 +2,7 @@ import { printError } from "@/services/error-formatter";
 import { printHeaders } from "@/services/headers-formatter";
 import { printMetadata } from "@/services/metadata-formatter";
 import { makeRequest } from "@/services/request-service";
+import { requestStorageService } from "@/services/request-storage-service";
 import { printResponse } from "@/services/response-formatter";
 import { formatResponseForOutput } from "@/services/response-output";
 import { applyQueryParams } from "@/utils/apply-query-params";
@@ -11,9 +12,10 @@ import { parseHeader } from "@/utils/parse-header";
 import { validateHttpMethod } from "@/utils/validate-http-method";
 import chalk from "chalk";
 import { Command } from "commander";
+import { randomUUID } from "node:crypto";
+import { writeFile } from "node:fs/promises";
 import ora from "ora";
 import path from "path";
-import { writeFile } from "node:fs/promises";
 
 export const setupRequestCommand = (program: Command) => {
   program
@@ -49,10 +51,13 @@ export const setupRequestCommand = (program: Command) => {
       "--output <file>",
       "Save response to a file instead of printing to console",
     )
+    .option('--save <requestName>', "Save request to be reused later")
     .action(async (method, url, options) => {
       const spinner = ora().start();
       const normalizedMethod = validateHttpMethod(method);
       const retryCount = options.retry ? Number(options.retry) : 1;
+
+      console.log(options.run);
 
       if (!Number.isInteger(retryCount) || retryCount < 0) {
         printError("Retry count must be a non-negative integer");
@@ -83,6 +88,15 @@ export const setupRequestCommand = (program: Command) => {
           return;
         }
 
+        const requestConfig = {
+          method, 
+          url,
+          headers,
+          body,
+          timeoutMs,
+          retryCount,
+        }
+
         const response = await makeRequest(
           normalizedMethod,
           normalizedURLWithParams,
@@ -93,6 +107,21 @@ export const setupRequestCommand = (program: Command) => {
         );
 
         spinner.succeed("Request completed successfully");
+
+        if (options.save) {
+          requestStorageService.save({
+            ...requestConfig,
+            id: randomUUID(),
+            createdAt: new Date().toISOString(),
+            name: options.save,
+            url: normalizedURLWithParams.href,
+            method: normalizedMethod,
+            headers,
+            body,
+            timeoutMs,
+            retryCount,
+          });
+        }
 
         if (response) {
           printMetadata(response.metadata);

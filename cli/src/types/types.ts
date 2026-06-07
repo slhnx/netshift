@@ -1,9 +1,11 @@
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 export interface RequestDefinition {
-  name?: string;
+  name: string;
   method: HttpMethod;
   url: string;
+  timeoutMs: number | undefined;
+  retryCount: number;
   headers?: Record<string, string>;
   body?: unknown;
   auth?: {
@@ -13,4 +15,9 @@ export interface RequestDefinition {
     password?: string;
   };
   variables?: Record<string, string>;
+}
+
+export interface SavedRequest extends RequestDefinition {
+  id: string;
+  createdAt: string;
 }

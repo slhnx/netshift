@@ -3,6 +3,7 @@
 import { Command } from "commander";
 import chalk from "chalk";
 import { setupRequestCommand } from "./commands/request";
+import { setupRunCommand } from "./commands/run";
 
 const program = new Command();
 
@@ -19,5 +20,6 @@ program
   });
 
 setupRequestCommand(program);
+setupRunCommand(program);
 
 program.parse();

@@ -7,6 +7,8 @@ import { useTheme } from "next-themes";
 import { gitConfig } from "@/lib/shared";
 import { cn } from "@/lib/utils";
 
+import { LogoIcon } from "@/components/Logo";
+
 export function Navbar() {
   const { setTheme, resolvedTheme, theme } = useTheme();
   const currentTheme = resolvedTheme ?? theme;
@@ -15,11 +17,7 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex h-6 w-6 items-center justify-center rounded-sm bg-foreground">
-            <span className="font-mono text-[11px] font-bold text-background">
-              N
-            </span>
-          </div>
+          <LogoIcon className="h-5 w-5" />
           <span className="font-display text-[15px] font-semibold tracking-tight">
             NetShift
           </span>
