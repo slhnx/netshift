@@ -29,7 +29,7 @@ export function FeatureCard({
         </span>
       </div>
 
-      <h3 className="mt-4 font-display text-[18px] font-semibold tracking-tight">
+      <h3 className="mt-4 font-display text-[18px] font-light tracking-tight">
         {title}
       </h3>
       <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
